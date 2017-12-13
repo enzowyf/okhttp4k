@@ -23,7 +23,7 @@ object Http {
 
 
   /**
-   * do cacel by tag
+   * do cancel by tag
    * @param tag tag
    */
   fun cancel(tag: Any) = okHttpClient.dispatcher().let {
