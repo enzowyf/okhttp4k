@@ -12,11 +12,11 @@ class GsonConverter<out T>(clazz: Class<T>) : Converter<ResponseBody, T> {
   private val adapter by lazy { gson.getAdapter<T>(clazz) }
   override fun convert(value: ResponseBody): T? =
       try {
-        value.use { value ->
-          val jsonReader = gson.newJsonReader(value.charStream())
+        value.use {
+          val jsonReader = gson.newJsonReader(it.charStream())
           adapter.read(jsonReader)
         }
-      } catch (e : IOException) {
+      } catch (e: IOException) {
         null
       }
 

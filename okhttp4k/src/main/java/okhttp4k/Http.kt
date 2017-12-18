@@ -9,30 +9,59 @@ import okhttp3.OkHttpClient
  */
 object Http {
 
-  private val okHttpClient by lazy { OkHttpClient() }
+  private var okHttpClientEither: Either<Any, Any> = Left(OkHttpClient())
 
-  fun <T> get(build: Request<T>.() -> Unit): Any = with(Request<T>(okHttpClient)) {
-    build()
-    return get()
-  }
-
-  fun <T> post(build: Request<T>.() -> Unit): Any = with(Request<T>(okHttpClient)) {
-    build()
-    return post()
+  /**
+   *  Init okhttp client
+   *
+   */
+  @Suppress("unused")
+  fun init(config: OkhttpBuilder.() -> Unit) {
+    val builder = OkhttpBuilder(okHttpClientEither.fold(Http::getOKHttpClient))
+    builder.config()
+    okHttpClientEither = Right(builder.build())
   }
 
 
   /**
-   * do cancel by tag
+   *  Http get
+   *
+   */
+  @Suppress("unused")
+  fun <T> get(config: Request<T>.() -> Unit): Any =
+      with(Request<T>(okHttpClientEither.fold(Http::getOKHttpClient))) {
+        config()
+        return get()
+      }
+
+  /**
+   *  Http post
+   *
+   */
+  @Suppress("unused")
+  fun <T> post(config: Request<T>.() -> Unit): Any =
+      with(Request<T>(okHttpClientEither.fold(Http::getOKHttpClient))) {
+        config()
+        return post()
+      }
+
+
+  /**
+   * Cancel a request by tag
    * @param tag tag
    */
-  fun cancel(tag: Any) = okHttpClient.dispatcher().let {
-    (it.runningCalls() + it.queuedCalls())
-        .filter { tag == it.request().tag() }
-        .forEach { it.cancel() }
-  }
+  @Suppress("unused")
+  fun cancel(tag: Any) =
+      with(okHttpClientEither.fold(Http::getOKHttpClient).dispatcher()) {
+        (runningCalls() + queuedCalls())
+            .filter { tag == it.request().tag() }
+            .forEach { it.cancel() }
+      }
 
+  private fun getOKHttpClient(obj: Any): OkHttpClient = obj as? OkHttpClient ?: OkHttpClient()
 }
+
+
 
 
 

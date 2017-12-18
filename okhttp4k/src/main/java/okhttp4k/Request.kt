@@ -23,6 +23,7 @@ class Request<out T>(private val okHttpClient: OkHttpClient) {
   var converter: Converter<ResponseBody, *> = ByteArrayConverter()
   var observeHandler: Handler? = null
   var async: Boolean = true
+  var json: Boolean = false
 
   private val params by lazy { mutableMapOf<String, String>() }
   private val headers by lazy { mutableMapOf<String, String>() }
@@ -69,11 +70,16 @@ class Request<out T>(private val okHttpClient: OkHttpClient) {
     var body: RequestBody? = null
     if (params.isNotEmpty()) {
       when (method) {
-        "GET" -> {
+        "GET", "DELETE", "HEAD" -> {
           url = url?.appendParams(params)
         }
-        "POST" -> {
-          val contentType = contentType ?: headers["Content-Type"]
+        else -> {
+          val contentType = if(json){
+            "application/json; charset=utf-8"
+          } else {
+            contentType ?: headers["Content-Type"]
+          }
+
           when (contentType) {
             null, "application/x-www-form-urlencoded" -> body = FormBody.Builder().appendParams(params).build()
             "application/json; charset=utf-8" -> body = RequestBody.create(MediaType.parse(contentType), params.toJsonString())
