@@ -1,7 +1,12 @@
 # Okhttp4k
 A simple Kotlin library for http request in Android.
 
-# Quick Start
+## Features
+- [x] Support Http, Https, Http2
+- [x] Support basic HTTP GET/POST/PUT/DELETE/HEAD/PATCH in a Kotlin DSL style interface
+- [x] Support both asynchronous and blocking requests
+
+## Quick Start
 ```
 Http.get<Weather> {
         //        tag = MainActivity::class.java
