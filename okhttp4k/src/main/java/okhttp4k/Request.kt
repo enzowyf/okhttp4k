@@ -40,24 +40,29 @@ class Request<out T>(private val okHttpClient: OkHttpClient) {
     }
   }
 
+  @Suppress("unused")
   internal fun get(): Any = request("GET", async)
 
+  @Suppress("unused")
   internal fun post(): Any = request("POST", async)
 
+  @Suppress("unused")
   fun params(makePairs: RequestPairs.() -> Unit) = params.fromPairs(makePairs)
 
-  fun headers(makePairs: RequestPairs.() -> Unit) = params.fromPairs(makePairs)
+  @Suppress("unused")
+  fun headers(makePairs: RequestPairs.() -> Unit) = headers.fromPairs(makePairs)
 
+  @Suppress("unused")
   fun onResponse(onResponse: (response: Response<*>) -> Unit) {
     callResponse = onResponse
   }
 
+  @Suppress("unused")
   fun onSuccess(onSuccess: (T) -> Unit) {
-
     callSuccess = onSuccess
   }
 
-
+  @Suppress("unused")
   fun onFailure(onFailure: (e: Throwable) -> Unit) {
     callFailure = onFailure
   }
@@ -74,7 +79,7 @@ class Request<out T>(private val okHttpClient: OkHttpClient) {
           url = url?.appendParams(params)
         }
         else -> {
-          val contentType = if(json){
+          val contentType = if (json) {
             "application/json; charset=utf-8"
           } else {
             contentType ?: headers["Content-Type"]

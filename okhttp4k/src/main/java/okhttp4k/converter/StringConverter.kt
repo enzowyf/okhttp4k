@@ -6,5 +6,5 @@ import okhttp3.ResponseBody
  * Created by enzowei on 2017/12/6.
  */
 class StringConverter : Converter<ResponseBody, String> {
-  override fun convert(value: ResponseBody): String = value.use { value.string() }
+  override fun convert(value: ResponseBody): String = value.use { it.string() }
 }

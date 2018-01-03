@@ -5,6 +5,7 @@ import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.util.Log
+import android.view.View
 import com.ezstudio.demo.model.WeatherData
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.coroutines.experimental.async
@@ -17,7 +18,6 @@ class MainActivity : Activity() {
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
     setContentView(R.layout.activity_main)
-
     Http.init {
       connectTimeout = 30_000
       readTimeout = 30_0000
@@ -36,6 +36,7 @@ class MainActivity : Activity() {
       }
       hostnameVerifier { hostname, session -> true }
     }
+
     async_get_btn.setOnClickListener {
       val tag = Http.get<String> {
         tag = MainActivity::class.java
