@@ -1,5 +1,7 @@
 package okhttp4k
 
+import okhttp3.Cache
+import okhttp3.Interceptor
 import okhttp3.OkHttpClient
 import okhttp4k.ssl.SSLContextBuilder
 import java.util.concurrent.TimeUnit
@@ -34,6 +36,31 @@ class OkhttpBuilder(private val okHttpClient: OkHttpClient) {
       builder.readTimeout(value, TimeUnit.MILLISECONDS)
     }
 
+  /**
+   * Sets the default write timeout for new connections. A value of 0 means no timeout, otherwise
+   * values must be between 1 and {@link Integer#MAX_VALUE} when converted to milliseconds.
+   */
+  @Suppress("unused")
+  var writeTimeout: Long
+    get() = okHttpClient.writeTimeoutMillis().toLong()
+    set(value) {
+      builder.writeTimeout(value, TimeUnit.MILLISECONDS)
+    }
+
+  /** Sets the response com.jygaming.android.lib.network.cache to be used to read and write cached responses. */
+  @Suppress("unused")
+  fun cache(cache: () -> Cache) {
+    builder.cache(cache())
+  }
+
+  fun networkInterceptor(networkInterceptor: () -> Interceptor) {
+    builder.addNetworkInterceptor(networkInterceptor())
+  }
+
+  fun interceptor(interceptor: () -> Interceptor) {
+    builder.addInterceptor(interceptor())
+  }
+
   @Suppress("unused")
   fun sslSocketFactory(protocol: String = SSLContextBuilder.defaultTLSProtocol, config: SSLContextBuilder.() -> Unit) {
     val (context, trustManager) = SSLContextBuilder().apply(config).createSSLContext(protocol)
@@ -52,17 +79,6 @@ class OkhttpBuilder(private val okHttpClient: OkHttpClient) {
   fun hostnameVerifier(verify: (hostname: String, session: SSLSession) -> Boolean) {
     builder.hostnameVerifier(HostnameVerifier(verify))
   }
-
-  /**
-   * Sets the default write timeout for new connections. A value of 0 means no timeout, otherwise
-   * values must be between 1 and {@link Integer#MAX_VALUE} when converted to milliseconds.
-   */
-  @Suppress("unused")
-  var writeTimeout: Long
-    get() = okHttpClient.writeTimeoutMillis().toLong()
-    set(value) {
-      builder.writeTimeout(value, TimeUnit.MILLISECONDS)
-    }
 
   internal fun build(): OkHttpClient {
     return builder.build()

@@ -24,12 +24,13 @@ class Request<out T>(private val okHttpClient: OkHttpClient) {
   var observeHandler: Handler? = null
   var async: Boolean = true
   var json: Boolean = false
+  var rawBody: ByteArray? = null
 
   private val params by lazy { mutableMapOf<String, String>() }
   private val headers by lazy { mutableMapOf<String, String>() }
   private var callResponse: (response: Response<*>) -> Unit = {}
   private var callSuccess: (T) -> Unit = {}
-  private var callFailure: (e: Throwable) -> Unit = {}
+  private var callFailure: (e: Throwable?, errorMsg: String) -> Unit = { _, _ -> }
 
   internal fun request(method: String, async: Boolean): Any {
     val call = makeCall(method)
@@ -63,7 +64,7 @@ class Request<out T>(private val okHttpClient: OkHttpClient) {
   }
 
   @Suppress("unused")
-  fun onFailure(onFailure: (e: Throwable) -> Unit) {
+  fun onFailure(onFailure: (e: Throwable?, errorMsg: String) -> Unit) {
     callFailure = onFailure
   }
 
@@ -92,6 +93,10 @@ class Request<out T>(private val okHttpClient: OkHttpClient) {
 
         }
       }
+    } else if (rawBody != null && method == "POST") {
+      if (contentType == "application/octet-stream") {
+        body = RequestBody.create(MediaType.parse(contentType), rawBody)
+      }
     }
 
     val request = okhttp3.Request.Builder()
@@ -107,7 +112,9 @@ class Request<out T>(private val okHttpClient: OkHttpClient) {
     try {
       call.enqueue(object : Callback {
         override fun onFailure(call: Call?, e: IOException?) {
-          e?.postOn(observeHandler, callFailure)
+          e?.postOn(observeHandler) {
+            callFailure(e, e.localizedMessage)
+          }
         }
 
         override fun onResponse(call: Call?, response: okhttp3.Response?) {
@@ -116,15 +123,22 @@ class Request<out T>(private val okHttpClient: OkHttpClient) {
             finalResponse?.let {
               it.postOn(observeHandler, callResponse)
               it.body?.postOn(observeHandler, callSuccess)
+              it.errorBody?.postOn(observeHandler) {
+                callFailure(null, it)
+              }
             }
           } catch (e: Throwable) {
-            e.postOn(observeHandler, callFailure)
+            e.postOn(observeHandler) {
+              callFailure(e, e.localizedMessage)
+            }
           }
         }
       })
 
     } catch (e: Throwable) {
-      e.postOn(observeHandler, callFailure)
+      e.postOn(observeHandler) {
+        callFailure(e, e.localizedMessage)
+      }
     }
     return tag
   }
@@ -136,9 +150,14 @@ class Request<out T>(private val okHttpClient: OkHttpClient) {
       finalResponse?.let {
         it.postOn(observeHandler, callResponse)
         it.body?.postOn(observeHandler, callSuccess)
+        it.errorBody?.postOn(observeHandler) {
+          callFailure(null, it)
+        }
       }
     } catch (e: Throwable) {
-      e.postOn(observeHandler, callFailure)
+      e.postOn(observeHandler) {
+        callFailure(e, e.localizedMessage)
+      }
     }
     return tag
   }

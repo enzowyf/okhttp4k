@@ -53,9 +53,9 @@ class MainActivity : Activity() {
         onSuccess { str ->
           text_view.text = str
         }
-        onFailure { e ->
-          Log.e("okhttp4k", e.localizedMessage ?: e.javaClass.name, e)
-          text_view.text = e.localizedMessage ?: e.javaClass.name
+        onFailure { e, errorMsg ->
+          Log.e("okhttp4k", e?.localizedMessage ?: e?.javaClass?.name, e)
+          text_view.text = e?.localizedMessage ?: e?.javaClass?.name
         }
       }
 
@@ -76,9 +76,9 @@ class MainActivity : Activity() {
         onSuccess { weather ->
           text_view.text = weather.toString()
         }
-        onFailure { e ->
-          Log.e("okhttp4k", e.localizedMessage ?: e.javaClass.name, e)
-          text_view.text = e.localizedMessage ?: e.javaClass.name
+        onFailure { e, errorMsg ->
+          Log.e("okhttp4k", e?.localizedMessage ?: e?.javaClass?.name, e)
+          text_view.text = e?.localizedMessage ?: e?.javaClass?.name
         }
       }
 
@@ -101,10 +101,10 @@ class MainActivity : Activity() {
           onSuccess { str ->
             runOnUiThread { text_view.text = str }
           }
-          onFailure { e ->
+          onFailure { e, errorMsg ->
             runOnUiThread {
-              Log.e("okhttp4k", e.localizedMessage ?: e.javaClass.name, e)
-              text_view.text = e.localizedMessage ?: e.javaClass.name
+              Log.e("okhttp4k", e?.localizedMessage ?: e?.javaClass?.name, e)
+              text_view.text = e?.localizedMessage ?: e?.javaClass?.name
             }
           }
         }
@@ -127,9 +127,9 @@ class MainActivity : Activity() {
         onSuccess { result ->
           text_view.text = result
         }
-        onFailure { e ->
-          Log.e("okhttp4k", e.localizedMessage ?: e.javaClass.name, e)
-          text_view.text = e.localizedMessage ?: e.javaClass.name
+        onFailure { e, errorMsg ->
+          Log.e("okhttp4k", e?.localizedMessage ?: e?.javaClass?.name, e)
+          text_view.text = e?.localizedMessage ?: e?.javaClass?.name
         }
       }
 
@@ -151,9 +151,9 @@ class MainActivity : Activity() {
         onSuccess { result ->
           text_view.text = result
         }
-        onFailure { e ->
-          Log.e("okhttp4k", e.localizedMessage ?: e.javaClass.name, e)
-          text_view.text = e.localizedMessage ?: e.javaClass.name
+        onFailure { e, errorMsg ->
+          Log.e("okhttp4k", e?.localizedMessage ?: e?.javaClass?.name, e)
+          text_view.text = e?.localizedMessage ?: e?.javaClass?.name
         }
       }
 
@@ -172,9 +172,9 @@ class MainActivity : Activity() {
         onSuccess { bytes ->
           text_view.text = String(bytes)
         }
-        onFailure { e ->
-          Log.d("okhttp4k", e.localizedMessage ?: e.javaClass.name, e)
-          text_view.text = e.localizedMessage ?: e.javaClass.name
+        onFailure { e, errorMsg ->
+          Log.e("okhttp4k", e?.localizedMessage ?: e?.javaClass?.name, e)
+          text_view.text = e?.localizedMessage ?: e?.javaClass?.name
         }
       }
 
@@ -191,9 +191,9 @@ class MainActivity : Activity() {
         onSuccess { str ->
           text_view.text = str
         }
-        onFailure { e ->
-          Log.e("okhttp4k", e.localizedMessage ?: e.javaClass.name, e)
-          text_view.text = e.localizedMessage ?: e.javaClass.name
+        onFailure { e, errorMsg ->
+          Log.e("okhttp4k", e?.localizedMessage ?: e?.javaClass?.name, e)
+          text_view.text = e?.localizedMessage ?: e?.javaClass?.name
         }
       }
 
