@@ -1,5 +1,7 @@
 package com.ezstudio.demo.model
 
+import com.ezstudio.demo.model.Coord
+
 /**
  * Created by enzowei on 2017/12/6.
  */
