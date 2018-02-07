@@ -12,7 +12,7 @@ import javax.net.ssl.SSLSession
  * Created by enzowei on 2017/12/15.
  */
 @HttpDslMarker
-class OkhttpBuilder(private val okHttpClient: OkHttpClient) {
+class OkhttpBuilder(private val okHttpClient: OkHttpClient = OkHttpClient()) {
   private val builder by lazy { okHttpClient.newBuilder() }
 
   /**
@@ -47,7 +47,7 @@ class OkhttpBuilder(private val okHttpClient: OkHttpClient) {
       builder.writeTimeout(value, TimeUnit.MILLISECONDS)
     }
 
-  /** Sets the response com.jygaming.android.lib.network.cache to be used to read and write cached responses. */
+  /** Sets the response cache to be used to read and write cached responses. */
   @Suppress("unused")
   fun cache(cache: () -> Cache) {
     builder.cache(cache())
@@ -80,7 +80,8 @@ class OkhttpBuilder(private val okHttpClient: OkHttpClient) {
     builder.hostnameVerifier(HostnameVerifier(verify))
   }
 
-  internal fun build(): OkHttpClient {
+  fun build(config: OkhttpBuilder.() -> Unit): OkHttpClient {
+    config()
     return builder.build()
   }
 }
