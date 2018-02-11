@@ -8,8 +8,7 @@ A simple Kotlin library for http request in Android.
 - [x] Support basic HTTP GET/POST/PUT/DELETE/HEAD/PATCH in a Kotlin DSL style interface
 - [x] Support both asynchronous and blocking requests
 
-##Gradle
-
+## Gradle
     allprojects {
         repositories {
 	    	...
