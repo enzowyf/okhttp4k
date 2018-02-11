@@ -9,6 +9,7 @@ A simple Kotlin library for http request in Android.
 - [x] Support both asynchronous and blocking requests
 
 ##Gradle
+
     allprojects {
         repositories {
 	    	...
