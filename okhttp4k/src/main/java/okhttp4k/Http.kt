@@ -21,7 +21,6 @@ object Http {
         okHttpClientEither = Right(builder.build(config))
     }
 
-
     /**
      *  Http get
      *
