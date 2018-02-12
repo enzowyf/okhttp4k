@@ -7,21 +7,21 @@ import java.io.InputStream
  */
 @SSLDslMarker
 class KeyConfig(val inputStream: InputStream) {
-  var algorithm: String? = null
-  var password: CharArray? = null
-  var fileType: String = "JKS"
+    var algorithm: String? = null
+    var password: CharArray? = null
+    var fileType: String = "JKS"
 
-  infix fun withPass(pass: String) = apply {
-    password = pass.toCharArray()
-  }
+    infix fun withPass(pass: String) = apply {
+        password = pass.toCharArray()
+    }
 
-  infix fun ofType(type: String) = apply {
-    fileType = type
-  }
+    infix fun ofType(type: String) = apply {
+        fileType = type
+    }
 
-  infix fun using(algo: String) = apply {
-    algorithm = algo
-  }
+    infix fun using(algo: String) = apply {
+        algorithm = algo
+    }
 
 }
 
