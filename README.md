@@ -1,5 +1,5 @@
-# Okhttp4k
-[![](https://jitpack.io/v/enzowyf/Okhttp4k.svg)](https://jitpack.io/#enzowyf/Okhttp4k)
+# okhttp4k
+[![](https://jitpack.io/v/enzowyf/okhttp4k.svg)](https://jitpack.io/#enzowyf/okhttp4k)
 
 A simple Kotlin library for http request in Android.
 
@@ -17,7 +17,7 @@ A simple Kotlin library for http request in Android.
 	}
 
 	dependencies {
-    	compile 'com.github.enzowyf:Okhttp4k:v0.1'
+    	compile 'com.github.enzowyf:okhttp4k:0.1.0'
 	}
 
 ## Quick Start
