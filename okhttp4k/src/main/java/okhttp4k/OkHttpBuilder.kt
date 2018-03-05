@@ -13,7 +13,7 @@ import javax.net.ssl.SSLSession
  * Created by enzowei on 2017/12/15.
  */
 @HttpDslMarker
-class OkhttpBuilder(private val okHttpClient: OkHttpClient = OkHttpClient()) {
+class OkHttpBuilder(private val okHttpClient: OkHttpClient = OkHttpClient()) {
     private val builder by lazy { okHttpClient.newBuilder() }
 
     /**
@@ -86,7 +86,7 @@ class OkhttpBuilder(private val okHttpClient: OkHttpClient = OkHttpClient()) {
         builder.hostnameVerifier(HostnameVerifier(verify))
     }
 
-    fun build(config: OkhttpBuilder.() -> Unit): OkHttpClient {
+    fun build(config: OkHttpBuilder.() -> Unit): OkHttpClient {
         config()
         return builder.build()
     }

@@ -16,8 +16,8 @@ object Http {
      *
      */
     @Suppress("unused")
-    fun init(config: OkhttpBuilder.() -> Unit) {
-        with(OkhttpBuilder(okHttpClientEither.fold(Http::getOKHttpClient))) {
+    fun init(config: OkHttpBuilder.() -> Unit) {
+        with(OkHttpBuilder(okHttpClientEither.fold(Http::getOKHttpClient))) {
             okHttpClientEither = Right(build(config))
         }
 
