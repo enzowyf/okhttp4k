@@ -11,16 +11,19 @@ class KeyConfig(val inputStream: InputStream) {
     var password: CharArray? = null
     var fileType: String = "JKS"
 
+    @Suppress("unused")
     infix fun withPass(pass: String) = apply {
         password = pass.toCharArray()
     }
 
+    @Suppress("unused")
     infix fun ofType(type: String) = apply {
         fileType = type
     }
 
-    infix fun using(algo: String) = apply {
-        algorithm = algo
+    @Suppress("unused")
+    infix fun using(algorithm: String) = apply {
+        this.algorithm = algorithm
     }
 
 }

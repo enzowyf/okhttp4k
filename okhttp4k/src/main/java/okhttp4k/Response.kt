@@ -5,7 +5,7 @@ import okhttp3.Headers
 /**
  * Created by enzowei on 2017/12/7.
  */
-class Response<T> {
+class Response<T> private constructor(rawResponse: okhttp3.Response) {
     val statusCode: Int
     val protocol: String
     val message: String
@@ -15,7 +15,7 @@ class Response<T> {
     var body: T? = null
     var errorBody: String? = null
 
-    private constructor(rawResponse: okhttp3.Response) {
+    init {
         statusCode = rawResponse.code()
         protocol = rawResponse.protocol().toString()
         message = rawResponse.message()
@@ -31,10 +31,10 @@ class Response<T> {
     }
 
     private fun parseHeaders(headers: Headers): Map<String, String> =
-            (0 until headers.size()).map {
-                val name = headers.name(it)
-                name to (headers.get(name) ?: "")
-            }.toMap()
+        (0 until headers.size()).map {
+            val name = headers.name(it)
+            name to (headers.get(name) ?: "")
+        }.toMap()
 
     companion object {
         fun <T> buildWith(rawResponse: okhttp3.Response): Response<T> = Response(rawResponse)

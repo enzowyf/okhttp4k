@@ -27,10 +27,9 @@ class Request<out T>(private val okHttpClient: OkHttpClient) {
 
     internal fun request(method: String, async: Boolean): Any {
         val call = makeCall(method)
-        return if (async) {
-            enqueue(call)
-        } else {
-            execute(call)
+        return when {
+            async -> enqueue(call)
+            else -> execute(call)
         }
     }
 
@@ -73,15 +72,18 @@ class Request<out T>(private val okHttpClient: OkHttpClient) {
                     url = url?.appendParams(params)
                 }
                 else -> {
-                    val contentType = if (json) {
-                        "application/json; charset=utf-8"
-                    } else {
-                        contentType ?: headers["Content-Type"]
+                    val contentType = when {
+                        json -> "application/json; charset=utf-8"
+                        else -> contentType ?: headers["Content-Type"]
                     }
 
                     when (contentType) {
-                        null, "application/x-www-form-urlencoded" -> body = FormBody.Builder().appendParams(params).build()
-                        "application/json; charset=utf-8" -> body = RequestBody.create(MediaType.parse(contentType), params.toJsonString())
+                        null, "application/x-www-form-urlencoded" -> body =
+                                FormBody.Builder().appendParams(params).build()
+                        "application/json; charset=utf-8" -> body = RequestBody.create(
+                            MediaType.parse(contentType),
+                            params.toJsonString()
+                        )
                     }
 
                 }
@@ -93,11 +95,11 @@ class Request<out T>(private val okHttpClient: OkHttpClient) {
         }
 
         val request = okhttp3.Request.Builder()
-                .tag(tag)
-                .url(url)
-                .appendHeaders(headers)
-                .method(method, body)
-                .build()
+            .tag(tag)
+            .url(url)
+            .appendHeaders(headers)
+            .method(method, body)
+            .build()
         return okHttpClient.newCall(request)
     }
 
@@ -106,7 +108,7 @@ class Request<out T>(private val okHttpClient: OkHttpClient) {
             call.enqueue(object : Callback {
                 override fun onFailure(call: Call?, e: IOException?) {
                     e?.postOn(observeHandler) {
-                        callFailure(e, e.localizedMessage)
+                        callFailure(it, it.localizedMessage)
                     }
                 }
 
@@ -122,7 +124,7 @@ class Request<out T>(private val okHttpClient: OkHttpClient) {
                         }
                     } catch (e: Throwable) {
                         e.postOn(observeHandler) {
-                            callFailure(e, e.localizedMessage)
+                            callFailure(it, it.localizedMessage)
                         }
                     }
                 }
@@ -130,7 +132,7 @@ class Request<out T>(private val okHttpClient: OkHttpClient) {
 
         } catch (e: Throwable) {
             e.postOn(observeHandler) {
-                callFailure(e, e.localizedMessage)
+                callFailure(it, it.localizedMessage)
             }
         }
         return tag
@@ -138,9 +140,7 @@ class Request<out T>(private val okHttpClient: OkHttpClient) {
 
     private fun execute(call: Call): Any {
         try {
-            val response = call.execute()
-            val finalResponse = response?.parse()
-            finalResponse?.let {
+            call.execute()?.parse()?.let {
                 it.postOn(observeHandler, callResponse)
                 it.body?.postOn(observeHandler, callSuccess)
                 it.errorBody?.postOn(observeHandler) {
@@ -149,7 +149,7 @@ class Request<out T>(private val okHttpClient: OkHttpClient) {
             }
         } catch (e: Throwable) {
             e.postOn(observeHandler) {
-                callFailure(e, e.localizedMessage)
+                callFailure(it, it.localizedMessage)
             }
         }
         return tag
@@ -157,13 +157,12 @@ class Request<out T>(private val okHttpClient: OkHttpClient) {
 
     private fun okhttp3.Response.parse(): Response<T> {
         val rawBody = this.body()
-        val code = this.code()
         //see https://tools.ietf.org/html/rfc2616#section-6.1.1
-        return when {
-            code < 200 || code >= 300 -> {
+        return when (code()) {
+            !in 200..299 -> {
                 Response.buildWith<T>(this).apply { errorBody = rawBody?.use { it.string() } ?: "" }
             }
-            code == 204 || code == 205 -> {
+            204, 205 -> {
                 //204 No Content && 205 No Content
                 rawBody?.close()
                 Response.buildWith(this)
@@ -179,34 +178,32 @@ class Request<out T>(private val okHttpClient: OkHttpClient) {
     }
 
     //append headers into builder
-    private fun okhttp3.Request.Builder.appendHeaders(headers: Map<String, String>): okhttp3.Request.Builder {
-        if (headers.isNotEmpty()) {
-            val headerBuilder = Headers.Builder()
-            headers.forEach { entry -> headerBuilder.add(entry.key, entry.value) }
-            this.headers(headerBuilder.build())
+    private fun okhttp3.Request.Builder.appendHeaders(headers: Map<String, String>): okhttp3.Request.Builder =
+        apply {
+            if (headers.isNotEmpty()) {
+                val headerBuilder = Headers.Builder()
+                headers.forEach { entry -> headerBuilder.add(entry.key, entry.value) }
+                this.headers(headerBuilder.build())
+            }
         }
-        return this
-    }
 
     //append params to url
-    private fun String.appendParams(params: Map<String, String>): String {
-        val sb = StringBuilder().append(this)
-        if (!this.contains("?")) {
-            sb.append("?")
-        }
-        sb.append(params.map { "${it.key}=${it.value}" }.joinToString("&"))
-        return sb.toString()
-    }
+    private fun String.appendParams(params: Map<String, String>): String =
+        StringBuilder().apply {
+            append(this@appendParams)
+            if (!this@appendParams.contains("?")) {
+                append("?")
+            }
+            append(params.map { "${it.key}=${it.value}" }.joinToString("&"))
+        }.toString()
 
     //append params to form builder
-    private fun FormBody.Builder.appendParams(params: Map<String, String>): FormBody.Builder {
-        params.forEach { entry -> this.add(entry.key, entry.value) }
-        return this
-    }
+    private fun FormBody.Builder.appendParams(params: Map<String, String>): FormBody.Builder =
+        apply { params.forEach { entry -> add(entry.key, entry.value) } }
 
     class RequestPairs(private val map: MutableMap<String, String>) {
         infix fun String.to(value: String) {
-            map.put(this, value)
+            map[this] = value
         }
     }
 }

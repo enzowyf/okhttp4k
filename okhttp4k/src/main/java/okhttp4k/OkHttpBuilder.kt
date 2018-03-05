@@ -3,6 +3,7 @@ package okhttp4k
 import okhttp3.Cache
 import okhttp3.Interceptor
 import okhttp3.OkHttpClient
+import okhttp4k.ssl.DEFAULT_TLS_PROTOCOL
 import okhttp4k.ssl.SSLContextBuilder
 import java.util.concurrent.TimeUnit
 import javax.net.ssl.HostnameVerifier
@@ -53,16 +54,21 @@ class OkhttpBuilder(private val okHttpClient: OkHttpClient = OkHttpClient()) {
         builder.cache(cache())
     }
 
+    @Suppress("unused")
     fun networkInterceptor(networkInterceptor: () -> Interceptor) {
         builder.addNetworkInterceptor(networkInterceptor())
     }
 
+    @Suppress("unused")
     fun interceptor(interceptor: () -> Interceptor) {
         builder.addInterceptor(interceptor())
     }
 
     @Suppress("unused")
-    fun sslSocketFactory(protocol: String = SSLContextBuilder.defaultTLSProtocol, config: SSLContextBuilder.() -> Unit) {
+    fun sslSocketFactory(
+        protocol: String = DEFAULT_TLS_PROTOCOL,
+        config: SSLContextBuilder.() -> Unit
+    ) {
         val (context, trustManager) = SSLContextBuilder().apply(config).createSSLContext(protocol)
         builder.sslSocketFactory(context.socketFactory, trustManager)
     }

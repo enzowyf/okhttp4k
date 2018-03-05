@@ -17,8 +17,10 @@ object Http {
      */
     @Suppress("unused")
     fun init(config: OkhttpBuilder.() -> Unit) {
-        val builder = OkhttpBuilder(okHttpClientEither.fold(Http::getOKHttpClient))
-        okHttpClientEither = Right(builder.build(config))
+        with(OkhttpBuilder(okHttpClientEither.fold(Http::getOKHttpClient))) {
+            okHttpClientEither = Right(build(config))
+        }
+
     }
 
     /**
@@ -27,10 +29,10 @@ object Http {
      */
     @Suppress("unused")
     fun <T> get(config: Request<T>.() -> Unit): Any =
-            with(Request<T>(okHttpClientEither.fold(Http::getOKHttpClient))) {
-                config()
-                return get()
-            }
+        with(Request<T>(okHttpClientEither.fold(Http::getOKHttpClient))) {
+            config()
+            get()
+        }
 
     /**
      *  Http post
@@ -38,10 +40,10 @@ object Http {
      */
     @Suppress("unused")
     fun <T> post(config: Request<T>.() -> Unit): Any =
-            with(Request<T>(okHttpClientEither.fold(Http::getOKHttpClient))) {
-                config()
-                return post()
-            }
+        with(Request<T>(okHttpClientEither.fold(Http::getOKHttpClient))) {
+            config()
+            post()
+        }
 
 
     /**
@@ -50,11 +52,11 @@ object Http {
      */
     @Suppress("unused")
     fun cancel(tag: Any) =
-            with(okHttpClientEither.fold(Http::getOKHttpClient).dispatcher()) {
-                (runningCalls() + queuedCalls())
-                        .filter { tag == it.request().tag() }
-                        .forEach { it.cancel() }
-            }
+        with(okHttpClientEither.fold(Http::getOKHttpClient).dispatcher()) {
+            (runningCalls() + queuedCalls())
+                .filter { tag == it.request().tag() }
+                .forEach { it.cancel() }
+        }
 
     private fun getOKHttpClient(obj: Any): OkHttpClient = obj as? OkHttpClient ?: OkHttpClient()
 }

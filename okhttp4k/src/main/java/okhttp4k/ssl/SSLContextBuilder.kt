@@ -12,6 +12,8 @@ import javax.net.ssl.*
 /**
  * Created by enzowei on 2017/12/16.
  */
+const val DEFAULT_TLS_PROTOCOL = "TLSv1.2"
+
 @SSLDslMarker
 @HttpDslMarker
 class SSLContextBuilder {
@@ -19,7 +21,7 @@ class SSLContextBuilder {
     private var trustManagers: Array<TrustManager>? = null
     private var keyManagers: Array<KeyManager>? = null
 
-    internal fun createSSLContext(protocol: String = SSLContextBuilder.defaultTLSProtocol): Pair<SSLContext, X509TrustManager> {
+    internal fun createSSLContext(protocol: String = DEFAULT_TLS_PROTOCOL): Pair<SSLContext, X509TrustManager> {
         if (protocol.isEmpty()) {
             throw IllegalArgumentException("At least one protocol must be provided.")
         }
@@ -27,20 +29,15 @@ class SSLContextBuilder {
         val context = SSLContext.getInstance(protocol).apply {
             init(keyManagers, arrayOf(trustManager), SecureRandom())
         }
-        return Pair(context, trustManager)
+        return context to trustManager
     }
 
-    private fun chooseTrustManager(trustManagers: Array<TrustManager>?): X509TrustManager {
-        if (trustManagers == null || trustManagers.isEmpty()) {
-            return UnsafeTrustManager()
+    private fun chooseTrustManager(trustManagers: Array<TrustManager>?): X509TrustManager =
+        when {
+            trustManagers == null || trustManagers.isEmpty() -> UnsafeTrustManager()
+            else -> trustManagers.filterIsInstance<X509TrustManager>().firstOrNull()
+                    ?: UnsafeTrustManager()
         }
-        trustManagers.forEach { trustManager ->
-            if (trustManager is X509TrustManager) {
-                return trustManager
-            }
-        }
-        return UnsafeTrustManager()
-    }
 
     @Suppress("unused")
     fun open(name: String) = KeyConfig(FileInputStream(name))
@@ -73,28 +70,25 @@ class SSLContextBuilder {
         this.keyManagers = keyManagers
     }
 
-    private fun trustManagerFactory(store: KeyConfig): TrustManagerFactory {
-        val algorithm = store.algorithm ?: TrustManagerFactory.getDefaultAlgorithm()
-        val key = loadKeyStore(store)
-        return TrustManagerFactory.getInstance(algorithm).apply {
+    private fun trustManagerFactory(store: KeyConfig): TrustManagerFactory = with(store) {
+        val algorithm = algorithm ?: TrustManagerFactory.getDefaultAlgorithm()
+        val key = this@SSLContextBuilder.loadKeyStore(this)
+        TrustManagerFactory.getInstance(algorithm).apply {
             init(key)
         }
     }
 
-    private fun keyManagerFactory(store: KeyConfig): KeyManagerFactory {
-        val algorithm = store.algorithm ?: KeyManagerFactory.getDefaultAlgorithm()
-        val key = loadKeyStore(store)
-        return KeyManagerFactory.getInstance(algorithm).apply {
-            init(key, store.password)
+    private fun keyManagerFactory(store: KeyConfig): KeyManagerFactory = with(store) {
+        val algorithm = algorithm ?: KeyManagerFactory.getDefaultAlgorithm()
+        val key = this@SSLContextBuilder.loadKeyStore(this)
+        KeyManagerFactory.getInstance(algorithm).apply {
+            init(key, password)
         }
     }
 
+
     private fun loadKeyStore(store: KeyConfig) = KeyStore.getInstance(store.fileType).apply {
         load(store.inputStream, store.password)
-    }
-
-    companion object {
-        val defaultTLSProtocol = "TLSv1.2"
     }
 }
 

@@ -8,8 +8,8 @@ import org.json.JSONObject
  * Created by enzowei on 2017/12/6.
  */
 class JsonConverter : Converter<ResponseBody, JSONObject> {
-    override fun convert(value: ResponseBody): JSONObject? {
-        return try {
+    override fun convert(value: ResponseBody): JSONObject? =
+        try {
             value.use {
                 JSONObject(it.string())
             }
@@ -17,5 +17,4 @@ class JsonConverter : Converter<ResponseBody, JSONObject> {
             e.printStackTrace()
             null
         }
-    }
 }

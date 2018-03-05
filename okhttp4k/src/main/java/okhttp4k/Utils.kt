@@ -11,6 +11,4 @@ fun <T> T.postOn(handler: Handler? = null, post: (T) -> Unit) {
     }
 }
 
-fun Map<String, String>.toJsonString(): String {
-    return JSONObject(this).toString()
-}
+fun Map<String, String>.toJsonString(): String = JSONObject(this).toString()
