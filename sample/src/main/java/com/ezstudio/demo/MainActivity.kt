@@ -18,7 +18,7 @@ class MainActivity : Activity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         Http.init {
-            connectTimeout = 30_000
+            connectTimeout = 60_000
             readTimeout = 30_0000
             //for https
 //      sslSocketFactory("SSL") {

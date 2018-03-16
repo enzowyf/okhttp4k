@@ -9,7 +9,7 @@ import okhttp3.OkHttpClient
  */
 object Http {
 
-    private var okHttpClientEither: Either<Any, Any> = Left(OkHttpClient())
+    private var okHttpClient = OkHttpClient()
 
     /**
      *  Init okhttp client
@@ -17,10 +17,9 @@ object Http {
      */
     @Suppress("unused")
     fun init(config: OkHttpBuilder.() -> Unit) {
-        with(OkHttpBuilder(okHttpClientEither.fold(Http::getOKHttpClient))) {
-            okHttpClientEither = Right(build(config))
+        okHttpClient = with(OkHttpBuilder(okHttpClient)) {
+            build(config)
         }
-
     }
 
     /**
@@ -29,7 +28,7 @@ object Http {
      */
     @Suppress("unused")
     fun <T> get(config: Request<T>.() -> Unit): Any =
-        with(Request<T>(okHttpClientEither.fold(Http::getOKHttpClient))) {
+        with(Request<T>(okHttpClient)) {
             config()
             get()
         }
@@ -40,7 +39,7 @@ object Http {
      */
     @Suppress("unused")
     fun <T> post(config: Request<T>.() -> Unit): Any =
-        with(Request<T>(okHttpClientEither.fold(Http::getOKHttpClient))) {
+        with(Request<T>(okHttpClient)) {
             config()
             post()
         }
@@ -52,13 +51,11 @@ object Http {
      */
     @Suppress("unused")
     fun cancel(tag: Any) =
-        with(okHttpClientEither.fold(Http::getOKHttpClient).dispatcher()) {
+        with(okHttpClient.dispatcher()) {
             (runningCalls() + queuedCalls())
                 .filter { tag == it.request().tag() }
                 .forEach { it.cancel() }
         }
-
-    private fun getOKHttpClient(obj: Any): OkHttpClient = obj as? OkHttpClient ?: OkHttpClient()
 }
 
 
