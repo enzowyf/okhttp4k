@@ -23,7 +23,7 @@ A simple Kotlin library for http request in Android.
 ## Quick Start
 ```
 Http.get<Weather> {
-        //        tag = MainActivity::class.java
+        //        tag { MainActivity::class.java }
         url { "http://api.openweathermap.org/data/2.5/weather" }
 
         params {
