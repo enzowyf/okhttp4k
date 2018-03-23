@@ -17,20 +17,20 @@ import java.io.IOException
  * Created by enzowei on 2017/11/14.
  */
 class Request<out T>(private val okHttpClient: OkHttpClient) {
-    var tag: Any = hashCode()
-    var url: String? = null
-    var contentType: String? = null
-    var converter: Converter<ResponseBody, *> = ByteArrayConverter()
-    var observeHandler: Handler? = null
-    var async: Boolean = true
-    var json: Boolean = false
-    var rawBody: ByteArray? = null
+    private var tag: Any = hashCode()
+    private var url: String? = null
+    private var contentType: String? = null
+    private var converter: Converter<ResponseBody, *> = ByteArrayConverter()
+    private var observeHandler: Handler? = null
+    private var async: Boolean = true
+    private var json: Boolean = false
+    private var rawBody: ByteArray? = null
 
     private val params by lazy { mutableMapOf<String, String>() }
     private val headers by lazy { mutableMapOf<String, String>() }
-    private var callResponse: (response: Response<*>) -> Unit = {}
-    private var callSuccess: (T) -> Unit = {}
-    private var callFailure: (e: Throwable?, errorMsg: String) -> Unit = { _, _ -> }
+    private var callResponse: ((response: Response<*>) -> Unit)? = null
+    private var callSuccess: ((T) -> Unit)? = null
+    private var callFailure: ((e: Throwable?, errorMsg: String) -> Unit)? = null
 
     internal fun request(method: String, async: Boolean): Any {
         val call = makeCall(method)
@@ -45,6 +45,46 @@ class Request<out T>(private val okHttpClient: OkHttpClient) {
 
     @Suppress("unused")
     internal fun post(): Any = request("POST", async)
+
+    @Suppress("unused")
+    fun tag(init: Request<*>.() -> Any) {
+        tag = init()
+    }
+
+    @Suppress("unused")
+    fun url(init: Request<*>.() -> String) {
+        url = init()
+    }
+
+    @Suppress("unused")
+    fun contentType(init: Request<*>.() -> String) {
+        contentType = init()
+    }
+
+    @Suppress("unused")
+    fun converter(init: Request<*>.() -> Converter<ResponseBody, *>) {
+        converter = init()
+    }
+
+    @Suppress("unused")
+    fun observeHandler(init: Request<*>.() -> Handler) {
+        observeHandler = init()
+    }
+
+    @Suppress("unused")
+    fun async(init: Request<*>.() -> Boolean) {
+        async = init()
+    }
+
+    @Suppress("unused")
+    fun json(init: Request<*>.() -> Boolean) {
+        json = init()
+    }
+
+    @Suppress("unused")
+    fun rawBody(init: Request<*>.() -> ByteArray) {
+        rawBody = init()
+    }
 
     @Suppress("unused")
     fun params(makePairs: RequestPairs.() -> Unit) = params.fromPairs(makePairs)
@@ -115,7 +155,7 @@ class Request<out T>(private val okHttpClient: OkHttpClient) {
             call.enqueue(object : Callback {
                 override fun onFailure(call: Call?, e: IOException?) {
                     e?.postOn(observeHandler) {
-                        callFailure(it, it.localizedMessage)
+                        callFailure?.invoke(it, it.localizedMessage)
                     }
                 }
 
@@ -123,15 +163,19 @@ class Request<out T>(private val okHttpClient: OkHttpClient) {
                     try {
                         val finalResponse = response?.parse()
                         finalResponse?.let {
-                            it.postOn(observeHandler, callResponse)
-                            it.body?.postOn(observeHandler, callSuccess)
+                            it.postOn(observeHandler) {
+                                callResponse?.invoke(it)
+                            }
+                            it.body?.postOn(observeHandler) {
+                                callSuccess?.invoke(it)
+                            }
                             it.errorBody?.postOn(observeHandler) {
-                                callFailure(null, it)
+                                callFailure?.invoke(null, it)
                             }
                         }
                     } catch (e: Throwable) {
                         e.postOn(observeHandler) {
-                            callFailure(it, it.localizedMessage)
+                            callFailure?.invoke(it, it.localizedMessage)
                         }
                     }
                 }
@@ -139,7 +183,7 @@ class Request<out T>(private val okHttpClient: OkHttpClient) {
 
         } catch (e: Throwable) {
             e.postOn(observeHandler) {
-                callFailure(it, it.localizedMessage)
+                callFailure?.invoke(it, it.localizedMessage)
             }
         }
         return tag
@@ -148,15 +192,19 @@ class Request<out T>(private val okHttpClient: OkHttpClient) {
     private fun execute(call: Call): Any {
         try {
             call.execute()?.parse()?.let {
-                it.postOn(observeHandler, callResponse)
-                it.body?.postOn(observeHandler, callSuccess)
+                it.postOn(observeHandler) {
+                    callResponse?.invoke(it)
+                }
+                it.body?.postOn(observeHandler) {
+                    callSuccess?.invoke(it)
+                }
                 it.errorBody?.postOn(observeHandler) {
-                    callFailure(null, it)
+                    callFailure?.invoke(null, it)
                 }
             }
         } catch (e: Throwable) {
             e.postOn(observeHandler) {
-                callFailure(it, it.localizedMessage)
+                callFailure?.invoke(it, it.localizedMessage)
             }
         }
         return tag

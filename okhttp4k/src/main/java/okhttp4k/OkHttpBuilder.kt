@@ -21,32 +21,26 @@ class OkHttpBuilder(private val okHttpClient: OkHttpClient = OkHttpClient()) {
      * otherwise values must be between 1 and {@link Integer#MAX_VALUE} when converted to
      * milliseconds.
      */
-    var connectTimeout: Long
-        get() = okHttpClient.connectTimeoutMillis().toLong()
-        set(value) {
-            builder.connectTimeout(value, TimeUnit.MILLISECONDS)
-        }
+    fun connectTimeout(timeout: () -> Long) {
+        builder.connectTimeout(timeout(), TimeUnit.MILLISECONDS)
+    }
 
     /**
      * Sets the default read timeout for new connections. A value of 0 means no timeout, otherwise
      * values must be between 1 and {@link Integer#MAX_VALUE} when converted to milliseconds.
      */
-    var readTimeout: Long
-        get() = okHttpClient.readTimeoutMillis().toLong()
-        set(value) {
-            builder.readTimeout(value, TimeUnit.MILLISECONDS)
-        }
+    fun readTimeout(timeout: () -> Long) {
+        builder.readTimeout(timeout(), TimeUnit.MILLISECONDS)
+    }
 
     /**
      * Sets the default write timeout for new connections. A value of 0 means no timeout, otherwise
      * values must be between 1 and {@link Integer#MAX_VALUE} when converted to milliseconds.
      */
     @Suppress("unused")
-    var writeTimeout: Long
-        get() = okHttpClient.writeTimeoutMillis().toLong()
-        set(value) {
-            builder.writeTimeout(value, TimeUnit.MILLISECONDS)
-        }
+    fun writeTimeout(timeout: () -> Long) {
+        builder.writeTimeout(timeout(), TimeUnit.MILLISECONDS)
+    }
 
     /** Sets the response cache to be used to read and write cached responses. */
     @Suppress("unused")
