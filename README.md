@@ -17,22 +17,22 @@ A simple Kotlin library for http request in Android.
 	}
 
 	dependencies {
-    	compile 'com.github.enzowyf:okhttp4k:0.1.0'
+    	compile 'com.github.enzowyf:okhttp4k:0.2.0'
 	}
 
 ## Quick Start
 ```
 Http.get<Weather> {
         //        tag = MainActivity::class.java
-        url = "http://api.openweathermap.org/data/2.5/weather"
+        url { "http://api.openweathermap.org/data/2.5/weather" }
 
         params {
           "appid" to "xxxxxxxxxxx"
           "q" to "London"
         }
-//          async = false
-        converter = GsonConverter(Weather::class.java)
-        observeHandler = Handler(Looper.getMainLooper())
+//          async { false }
+        converter { GsonConverter(Weather::class.java) }
+        observeHandler { Handler(Looper.getMainLooper()) }
         onResponse { response ->
           response.errorBody?.let { setText(it) }
         }
