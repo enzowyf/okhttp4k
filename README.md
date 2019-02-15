@@ -9,6 +9,8 @@ A simple Kotlin library for http request in Android.
 - [x] Support both asynchronous and blocking requests
 
 ## Gradle
+
+```groovy
     allprojects {
         repositories {
 	    	...
@@ -19,9 +21,11 @@ A simple Kotlin library for http request in Android.
 	dependencies {
     	compile 'com.github.enzowyf:okhttp4k:0.2.0'
 	}
+```
 
 ## Quick Start
-```
+
+```kotlin
 Http.get<Weather> {
         //        tag { MainActivity::class.java }
         url { "http://api.openweathermap.org/data/2.5/weather" }
